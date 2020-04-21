@@ -1,0 +1,128 @@
+{% extends "base_chart2.html" %}
+
+{% block title %}
+分析
+{% endblock %}
+
+{% block content %}
+
+<h1 class="my-5">Software Reliability Assessment</h1>
+
+<div class="row">
+  <div class="col-lg-5">
+    <div class="card card-body mb-3">
+      <h5 class="card-title">CSVデータの詳細</h5>
+      <p class="card-text">
+        ID : {{ uploadfile.id }}<br>
+        ファイル名 : {{ uploadfile.name }}（<a href="{{ uploadfile.file.url }}">ダウンロード</a>）<br>
+        投稿日時 : {{ uploadfile.created_at }}<br>
+        更新日時 : {{ uploadfile.updated_at }}<br>
+      </p>
+    </div>
+
+    <div class="card card-body mb-3">
+      <h5 class="card-title">{{ uploadfile.name }}</h5>
+      <p class="card-text">
+        {% autoescape off %}
+          {{ uploadfile.df_html }}
+        {% endautoescape %}
+      </p>
+      <div>
+        <form action="{% url 'sras:analyst_table' uploadfile.id %}" method="POST">
+          <!-- {{ form.as_p }} -->
+          {% csrf_token %}
+          <input type="hidden" name="label" value="{{ uploadfile.str_labels }}">
+          <input type="hidden" name="df" value="{{ uploadfile.str_datas }}">
+          <button type="submit" class="btn btn-primary w-100">テーブルの拡大表示</button>
+        </form>
+      </div>
+      <hr>
+      <div>
+        <form action="{% url 'sras:analyst_table_download' uploadfile.id %}" method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="label" value="{{ uploadfile.str_labels }}">
+          <input type="hidden" name="df" value="{{ uploadfile.str_csv_data }}">
+          <button type="submit" class="btn btn-primary w-100">CSVファイルに書き出す</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="col-lg-7">
+    <div class="card card-body mb-3">
+      <div id="MeanValueChartDiv" class="chart"></div>
+      <form action="{% url 'sras:analyst_mvfchart' uploadfile.id %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="xdata" value="{{ uploadfile.xdata }}">
+        <input type="hidden" name="ydata" value="{{ uploadfile.ydata }}">
+        <input type="hidden" name="hdata" value="{{ uploadfile.hdata }}">
+        <input type="hidden" name="xlabel" value="{{ uploadfile.xlabel }}">
+        <input type="hidden" name="ylabel" value="{{ uploadfile.ylabel }}">
+        <input type="hidden" name="hlabel" value="{{ uploadfile.hlabel }}">
+        <button type="submit" class="btn btn-primary w-100">チャートの拡大表示</button>
+      </form>
+    </div>
+
+    <div class="card card-body mb-3">
+      <div id="IntensityChartDiv" class="chart"></div>
+      <form action="{% url 'sras:analyst_intensitychart' uploadfile.id %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="xdata" value="{{ uploadfile.xdata }}">
+        <input type="hidden" name="ydata" value="{{ uploadfile.dydata }}">
+        <input type="hidden" name="hdata" value="{{ uploadfile.intensitydata }}">
+        <input type="hidden" name="xlabel" value="{{ uploadfile.xlabel }}">
+        <input type="hidden" name="ylabel" value="{{ uploadfile.dylabel }}">
+        <input type="hidden" name="hlabel" value="{{ uploadfile.intensitylabel }}">
+        <button type="submit" class="btn btn-primary w-100">チャートの拡大表示</button>
+      </form>
+    </div>
+
+    <div class="card card-body mb-3">
+      <h5 class="card-subtitle">初期パラメータ</h5>
+      <p class="card-text">
+        <dl class="row">
+          <dt class="col-sm-3">srmodel</dt>
+          <dd class="col-sm-9">{{ uploadfile.srmodel }}</dd>
+          <dt class="col-sm-3">init_a</dt>
+          <dd class="col-sm-9">{{ uploadfile.init_a }}</dd>
+          <dt class="col-sm-3">init_b</dt>
+          <dd class="col-sm-9">{{ uploadfile.init_b }}</dd>
+          {% if uploadfile.srmodel == 'nhpp_gamma' or uploadfile.srmodel == 'nhpp_wei' %}
+          <dt class="col-sm-3">init_c</dt>
+          <dd class="col-sm-9">{{ uploadfile.init_c }}</dd>
+          {% endif %}
+        </dl>
+      </p>
+      <hr>
+      <h5 class="card-subtitle">推定結果</h5>
+      <p class="card-text">
+        <dl class="row">
+          {% for key, value in uploadfile.result.items %}
+            <dt class="col-sm-3">{{ key }}</dt>
+            <dd class="col-sm-9">{{ value|floatformat:5 }}</dd>
+          {% endfor %}
+        </dl>
+      </p>
+      <div>
+        <form action="{% url 'sras:analyst_result_download' uploadfile.id %}" method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="result" value="{{ uploadfile.str_result_csv }}">
+          <button type="submit" class="btn btn-primary w-100">推定結果をCSVファイルに書き出す</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block link %}
+<div>
+  <p>
+    <a href="{% url 'sras:show' uploadfile.id %}">
+      詳細ページに戻る
+    </a>
+  </p>
+</div>
+{% endblock %}

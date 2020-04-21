@@ -1,0 +1,26 @@
+{% extends "base_chart.html" %}
+
+{% block title %}
+CSVデータの詳細
+{% endblock %}
+
+{% block content %}
+
+
+<div class="card mb-3 fullheight">
+  <div class="card-body fullheight">
+    <div id="chart" class="chart fullheight"></div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block link %}
+<div>
+  <p>
+    <a href="{% url 'sras:show' uploadfile.id %}">
+      詳細ページに戻る
+    </a>
+  </p>
+</div>
+{% endblock %}

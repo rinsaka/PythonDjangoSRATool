@@ -1,0 +1,174 @@
+{% load static %}<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <!-- Form -->
+  <script>
+    function change_init() {
+      obj_select = document.getElementById('srmodel');
+      index = obj_select.selectedIndex;
+      model = obj_select.options[index].value;
+      let label_name;
+      let init_obj_name;
+      let init_label_name;
+      let acum_obj_name;
+      let acum_label_name;
+      if (model == "nhpp_ray") {
+        document.getElementById("init_b").value = "10";
+        for (i = 1; i <= {{ uploadfile.n_metrics }}; i++) {
+          label_name = "label_met" + i;
+          init_obj_name = "init_met" + i;
+          init_label_name = "label_init_met" + i;
+          acum_obj_name = "acumulation_met" + i;
+          acum_label_name = "label_acumulation_met" + i;
+          document.getElementById(label_name).classList.add("label-gray");
+          document.getElementById(init_obj_name).disabled = true;
+          document.getElementById(init_label_name).classList.add("label-gray");
+          document.getElementById(acum_obj_name).disabled = true;
+          document.getElementById(acum_label_name).classList.add("label-gray");
+        }
+
+      } else if (model == "nhpp_exp" || model == "nhpp_earlang" || model == "nhpp_gamma" || model == "nhpp_wei") {
+        document.getElementById("init_b").value = "0.01";
+        for (i = 1; i <= {{ uploadfile.n_metrics }}; i++) {
+          label_name = "label_met" + i;
+          init_obj_name = "init_met" + i;
+          init_label_name = "label_init_met" + i;
+          acum_obj_name = "acumulation_met" + i;
+          acum_label_name = "label_acumulation_met" + i;
+          document.getElementById(label_name).classList.add("label-gray");
+          document.getElementById(init_obj_name).disabled = true;
+          document.getElementById(init_label_name).classList.add("label-gray");
+          document.getElementById(acum_obj_name).disabled = true;
+          document.getElementById(acum_label_name).classList.add("label-gray");
+        }
+      } else if (model == "dmalt_ray") {
+        document.getElementById("init_b").value = "10";
+        for (i = 1; i <= {{ uploadfile.n_metrics }}; i++) {
+          label_name = "label_met" + i;
+          init_obj_name = "init_met" + i;
+          init_label_name = "label_init_met" + i;
+          acum_obj_name = "acumulation_met" + i;
+          acum_label_name = "label_acumulation_met" + i;
+          document.getElementById(label_name).classList.remove("label-gray");
+          document.getElementById(init_obj_name).disabled = false;
+          document.getElementById(init_label_name).classList.remove("label-gray");
+          document.getElementById(acum_obj_name).disabled = false;
+          document.getElementById(acum_label_name).classList.remove("label-gray");
+        }
+      } else if (model == "dmalt_exp" || model == "dmalt_earlang" || model == "dmalt_gamma" || model == "dmalt_wei") {
+        document.getElementById("init_b").value = "0.0001";
+        for (i = 1; i <= {{ uploadfile.n_metrics }}; i++) {
+          label_name = "label_met" + i;
+          init_obj_name = "init_met" + i;
+          init_label_name = "label_init_met" + i;
+          acum_obj_name = "acumulation_met" + i;
+          acum_label_name = "label_acumulation_met" + i;
+          document.getElementById(label_name).classList.remove("label-gray");
+          document.getElementById(init_obj_name).disabled = false;
+          document.getElementById(init_label_name).classList.remove("label-gray");
+          document.getElementById(acum_obj_name).disabled = false;
+          document.getElementById(acum_label_name).classList.remove("label-gray");
+        }
+      }
+
+      if (model == "nhpp_gamma" || model == "nhpp_wei" || model == "dmalt_gamma" || model == "dmalt_wei") {
+        document.getElementById("init_c").disabled = false;
+      } else {
+        document.getElementById("init_c").disabled = true;
+      }
+    }
+  </script>
+
+  <!-- Google Chart  -->
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript">
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+      // Django からカンマ区切り文字列データを受け取る
+      var jsXData = '{{ uploadfile.xdata }}';
+      var jsYData = '{{ uploadfile.ydata }}';
+      var jsHead = '{{ uploadfile.xlabel }},{{ uploadfile.ylabel }}';
+
+      // カンマ区切りの文字列を配列に格納
+      var head = jsHead.split(',');
+      var xvals = jsXData.split(',').map(str => parseInt(str, 10));
+      var yvals = jsYData.split(',').map(str => parseFloat(str));
+      var i;
+      // データを作る
+      var mydata = [head];
+      for (i = 0; i < yvals.length; i++) {
+        mydata.push([xvals[i], yvals[i]]);
+      }
+
+      // Create the data table.
+      var data = google.visualization.arrayToDataTable(mydata);
+
+      var options = {
+        curveType: 'none',
+        hAxis: {
+          title: '{{ uploadfile.xlabel }}',
+        },
+        vAxis: {
+          title: 'Cumulated Faults',
+        },
+        legend: { position: 'bottom' },
+        // series: {
+        //   1: { lineWidth: 1, pointSize: 0 }
+        // }
+        animation: {
+          startup: true,
+          duration: 500,
+          easing: 'inAndOut'
+        }
+      };
+
+      var chart = new google.visualization.ScatterChart(document.getElementById('chart'));
+
+      chart.draw(data, options);
+    }
+    // onReSizeイベント
+    window.onresize = function(){
+
+      drawChart();
+
+    }
+  </script>
+  <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+
+
+<div class="container-fluid fullheight">
+  {% if messages %}
+    <div>
+      {% for message in messages %}
+      <p class="flash_message {{ message.tags }}" onclick="this.classList.add('hidden')">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% block content %}
+  {% endblock content %}
+
+
+
+  {% block link %}
+  {% endblock %}
+
+</div>
+
+
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+</body>
+</html>

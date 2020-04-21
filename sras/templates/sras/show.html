@@ -1,0 +1,143 @@
+{% extends "base_chart.html" %}
+
+{% block title %}
+CSVデータの詳細
+{% endblock %}
+
+{% block content %}
+
+<h1 class="my-5">Software Reliability Assessment</h1>
+
+<div class="row">
+  <div class="col-lg-5">
+    <div class="card card-body mb-3">
+      <h5 class="card-title">CSVデータの詳細</h5>
+      <p class="card-text">
+        ID : {{ uploadfile.id }}<br>
+        ファイル名 : {{ uploadfile.name }}（<a href="{{ uploadfile.file.url }}">ダウンロード</a>）<br>
+        <!-- 投稿日時 : {{ uploadfile.created_at }}<br>
+        更新日時 : {{ uploadfile.updated_at }}<br> -->
+      </p>
+      <p class="card-text">
+        <a href="{% url 'sras:delete' uploadfile.id %}">
+          [ 削除 ]
+        </a>
+      </p>
+    </div>
+
+    <div class="card card-body mb-3">
+      <h5 class="card-title">{{ uploadfile.name }}</h5>
+      <p class="card-text">
+        {% autoescape off %}
+          {{ uploadfile.df_html }}
+        {% endautoescape %}
+      </p>
+      <form action="{% url 'sras:table' uploadfile.id %}" method="GET">
+        <button type="submit" class="btn btn-primary w-100">テーブルの拡大表示</button>
+      </form>
+    </div>
+  </div>
+
+
+  <div class="col-lg-7">
+    <div class="card card-body mb-3">
+      <div id="chart" class="chart"></div>
+      <form action="{% url 'sras:chart' uploadfile.id %}" method="GET">
+        <button type="submit" class="btn btn-primary w-100">チャートの拡大表示</button>
+      </form>
+    </div>
+
+    <div class="card card-body mb-3">
+      <h5 class="card-title">モデルのパラメータ推定</h5>
+      <div>
+
+        <form action="{% url 'sras:analyst' uploadfile.id %}" method="POST">
+          <!-- {{ form.as_p }} -->
+          {% csrf_token %}
+          <input type="hidden" name="n_metrics" value="{{ uploadfile.n_metrics }}">
+          <input type="hidden" name="max_tData" value="{{ uploadfile.max_tData }}">
+          <input type="hidden" name="max_tPrediction" value="{{ uploadfile.max_tPrediction }}">
+          <input type="hidden" name="str_tData" value="{{ uploadfile.str_tData }}">
+          <input type="hidden" name="str_yData" value="{{ uploadfile.str_yData }}">
+          <input type="hidden" name="str_tPrediction" value="{{ uploadfile.str_tPrediction }}">
+          <div class="form-group">
+              <label for="srmodel">モデル: </label><br>
+              <select name="srmodel" id="srmodel" onChange="change_init()" class="form-control">
+                <optgroup label="NHPP モデル">
+                  <option value="nhpp_exp">NHPP モデル（指数分布）</option>
+                  <option value="nhpp_earlang">NHPP モデル（アーラン分布）</option>
+                  <option value="nhpp_gamma">NHPP モデル（ガンマ分布）</option>
+                  <option value="nhpp_ray">NHPP モデル（レイリー分布）</option>
+                  <option value="nhpp_wei">NHPP モデル（ワイブル分布）</option>
+                </optgroup>
+
+                {% if uploadfile.n_metrics > 0 %}
+                <optgroup label="DMALT モデル">
+                  <option value="dmalt_exp" selected>DMALT モデル（指数分布）</option>
+                  <option value="dmalt_earlang">DMALT モデル（アーラン分布）</option>
+                  <option value="dmalt_gamma">DMALT モデル（ガンマ分布）</option>
+                  <option value="dmalt_ray">DMALT モデル（レイリー分布）</option>
+                  <option value="dmalt_wei">DMALT モデル（ワイブル分布）</option>
+                </optgroup>
+                {% else %}
+                <optgroup label="DMALT モデル"">
+                  <option value="dmalt_exp" disabled>DMALT モデル（指数分布）</option>
+                  <option value="dmalt_earlang" disabled>DMALT モデル（アーラン分布）</option>
+                  <option value="dmalt_gamma" disabled>DMALT モデル（ガンマ分布）</option>
+                  <option value="dmalt_ray" disabled>DMALT モデル（レイリー分布）</option>
+                  <option value="dmalt_wei" disabled>DMALT モデル（ワイブル分布）</option>
+                </optgroup>
+                {% endif %}
+              </select>
+          </div>
+          <div class="form-group">
+            <label for="init_a">フォールト数 (a) の初期値: </label><br>
+            <input type="number" name="init_a" value="{{ uploadfile.maxDefects }}" min="0" placeholder="推定時におけるフォールト数の初期値を入力してください" required class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="init_b">障害発生率 (b) の初期値: </label><br>
+            <input type="number" name="init_b" id="init_b" value="0.01" min="0" step="any" placeholder="推定時におけるフォールト発見率の初期値を入力してください" required class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="init_c">形状パラメータ (c) の初期値: </label><br>
+            <input type="number" name="init_c" id="init_c" value="1.0" min="0" step="any" placeholder="推定時における形状パラメータの初期値を入力してください" required disabled class="form-control">
+          </div>
+          <hr>
+          {% if uploadfile.n_metrics > 0 %}
+          <h5 class="card-title">メトリクスデータ</h5>
+          {% endif %}
+          {% for label in uploadfile.label_metrics %}
+          <h5 class="card-subtitle"><span id="label_met{{ forloop.counter }}" class="">{{ label }} ({{ forloop.counter }} / {{ uploadfile.n_metrics }}):</span></h5>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="acumulation_met{{ forloop.counter }}" id="acumulation_met{{ forloop.counter }}"  checked><span id="label_acumulation_met{{ forloop.counter }}" class="">累積値データとして処理する</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label for="init_met{{ forloop.counter }}"><span id="label_init_met{{ forloop.counter }}" class="">初期値</span></label><br>
+              <input type="number" name="init_met{{ forloop.counter }}" id="init_met{{ forloop.counter }}" value="0.001" step="any" placeholder="{{ label }} の初期値を入力してください" required
+                class="form-control">
+            </div>
+            <hr>
+          {% endfor %}
+
+          <button type="submit" class="btn btn-primary w-100">分析を開始する</button>
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block link %}
+<div>
+  <p>
+    <a href="{% url 'sras:index' %}">
+      トップページに戻る
+    </a>
+  </p>
+</div>
+{% endblock %}

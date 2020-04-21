@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}
+CSV ファイルのアップロード
+{% endblock %}
+
+{% block content %}
+<h1 class="my-5">Software Reliability Assessment</h1>
+
+<form action="" method="POST" enctype="multipart/form-data">
+    {{ form.as_p }}
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary w-100">送信</button>
+</form>
+
+{% if file_path %}
+  <a href="{{ file_path }}">{{ file_path }}</a>
+{% endif %}
+
+<hr>
+<p>
+  <a href="{% url 'sras:index' %}">
+    トップページに戻る
+  </a>
+</p>
+
+{% endblock content %}

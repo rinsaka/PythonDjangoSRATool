@@ -1,0 +1,54 @@
+.flash_message {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  text-align: center;
+}
+
+.success {
+  color: #ffc;
+  background: #417690;
+}
+
+.error {
+  color: rgb(236, 236, 220);
+  background: #c03714;
+}
+.hidden {
+  display: none;
+}
+
+.table td {
+  text-align: center;
+}
+
+.table thead th {
+  text-align: center;
+}
+
+.chart {
+  width: 100%;
+  height: 500px;
+}
+
+.pull-right {
+  float: right;
+  margin-left: 7px;
+
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+}
+
+.fullheight {
+  height: 100%;
+}
+
+span.label-gray{
+  color: #acacac;
+}

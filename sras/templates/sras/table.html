@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}
+Software Reliability Assessment
+{% endblock %}
+
+{% block content %}
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">{{ uploadfile.name }}</h5>
+    <p class="card-text">
+      {% autoescape off %}
+        {{ uploadfile.df_html }}
+      {% endautoescape %}
+    </p>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block link %}
+<div>
+  <p>
+    <a href="{% url 'sras:show' uploadfile.id %}">
+      詳細ページに戻る
+    </a>
+  </p>
+</div>
+{% endblock %}
+

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}
+Software Reliability Assessment
+{% endblock %}
+
+{% block content %}
+<h1 class="my-5">Software Reliability Assessment</h1>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">アップロード</h5>
+    <p class="card-text">
+      <a href="{% url 'sras:upload' %}">
+        CSVファイルをアップロードする
+      </a>
+    </p>
+
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">ファイルの一覧</h5>
+    {% if uploadfile_list %}
+      {% for uploadfile in uploadfile_list %}
+        <p class="card-text">
+          <a href="{% url 'sras:show' uploadfile.id %}">
+            {{ uploadfile.id }} :
+            {{ uploadfile.name }}
+          </a>
+        </p>
+      {% endfor %}
+    {% else %}
+      <p class="card-text">
+        まだアップロードされたファイルはありません
+      </p>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}
