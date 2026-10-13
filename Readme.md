@@ -4,7 +4,6 @@
 ## ライブラリのインストール
 
 ~~~
-% pip list | grep ulid
 % pip install -r requirements.txt
 ~~~
 
